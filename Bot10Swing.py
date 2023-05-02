@@ -162,7 +162,7 @@ class Bot10Swing():
 
                             if (obj_lst[code]['s'] == 1) and (t1 <= los_dif):
 
-                                ord_qty = int(bal_lst[code]['q'] * 0.2) if int(bal_lst[code]['q'] * 0.2) != 0 else 1
+                                ord_qty = int(bal_lst[code]['q']) * 0.2 if int(bal_lst[code]['q']) * 0.2 != 0 else 1
                                 sel_r = self.bkk.create_market_sell_order(code, ord_qty) if tn < tn_153000 else self.bkk.create_over_sell_order(code, ord_qty)
                                 _ror = ror(bal_lst[code]['ptp'] * 0.2, bal_lst[code]['ctp'] * 0.2)
 
@@ -178,7 +178,7 @@ class Bot10Swing():
                             
                             elif (obj_lst[code]['s'] == 2) and (t2 <= los_dif):
 
-                                ord_qty = int(bal_lst[code]['q'] * (3/8)) if int(bal_lst[code]['q'] * (3/8)) != 0 else 1
+                                ord_qty = int(bal_lst[code]['q']) * (3/8) if int(bal_lst[code]['q']) * (3/8) != 0 else 1
                                 sel_r = self.bkk.create_market_sell_order(code, ord_qty) if tn < tn_153000 else self.bkk.create_over_sell_order(code, ord_qty)
                                 _ror = ror(bal_lst[code]['ptp'] * (3/8), bal_lst[code]['ctp'] * (3/8))
 
@@ -433,9 +433,17 @@ if __name__ == '__main__':
     B10 = Bot10Swing()
     # 한달에 한번
     # B10.deadline_to_excel()
-    if os.path.isfile(FILE_URL_BLNC_10M):
-        os.remove(FILE_URL_BLNC_10M)
-    B10.market_to_excel()
+    # if os.path.isfile(FILE_URL_BLNC_10M):
+    #     os.remove(FILE_URL_BLNC_10M)
+    #     bl = B10.get_balance_code_list(True)
+    #     o = {}
+    #     for i in bl:
+    #         o[i] = {}
+    #         o[i]['x'] = copy.deepcopy(bl[i]['p'])
+    #         o[i]['a'] = copy.deepcopy(bl[i]['a'])
+    #         o[i]['s'] = 1
+    #     save_file(FILE_URL_BLNC_10M, o)
+    # B10.market_to_excel()
 
     while True:
 
