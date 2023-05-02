@@ -93,13 +93,11 @@ class Bot10Swing():
         bal_lst = self.get_balance_code_list(True)
         sel_lst = []
 
-        if os.path.isfile(FILE_URL_BALANCE_LIST_10M):
-            obj_lst = load_file(FILE_URL_BALANCE_LIST_10M)
-            print('Loaded!!!')
+        if os.path.isfile(FILE_URL_BLNC_10M):
+            obj_lst = load_file(FILE_URL_BLNC_10M)
         else:
             obj_lst = {}
-            save_file(FILE_URL_BALANCE_LIST_10M, obj_lst)
-            print('Saved!!!')
+            save_file(FILE_URL_BLNC_10M, obj_lst)
 
         for code in self.b_l:
 
@@ -236,7 +234,7 @@ class Bot10Swing():
 
                             obj_lst.pop(code, None)
 
-        save_file(FILE_URL_BALANCE_LIST_10M, obj_lst)
+        save_file(FILE_URL_BLNC_10M, obj_lst)
 
         sel_txt = ''
         for sl in sel_lst:
@@ -391,7 +389,7 @@ class Bot10Swing():
 
     
     def deadline_to_excel(self):
-        save_file(FILE_URL_QUANT_LAST_10M, self.bkk.filter_code_list())
+        save_file(FILE_URL_SMBL_10M, self.bkk.filter_code_list())
         self.market_to_excel(True)
 
     
@@ -425,7 +423,7 @@ class Bot10Swing():
     
     
     def get_guant_code_list(self):
-        _l = load_file(FILE_URL_QUANT_LAST_10M)
+        _l = load_file(FILE_URL_SMBL_10M)
         l = [str(int(i)).zfill(6) for i in _l]
         return l
     
@@ -435,7 +433,9 @@ if __name__ == '__main__':
     B10 = Bot10Swing()
     # 한달에 한번
     # B10.deadline_to_excel()
-    # B10.market_to_excel(True)
+    if os.path.isfile(FILE_URL_BLNC_10M):
+        os.remove(FILE_URL_BLNC_10M)
+    B10.market_to_excel()
 
     while True:
 
