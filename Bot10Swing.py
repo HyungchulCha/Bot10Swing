@@ -454,7 +454,7 @@ class Bot10Swing():
 if __name__ == '__main__':
 
     B10 = Bot10Swing()
-    B10.market_to_excel(False, True)
+    # B10.market_to_excel(False, True)
 
     while True:
 
