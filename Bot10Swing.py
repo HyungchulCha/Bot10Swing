@@ -330,39 +330,6 @@ class Bot10Swing():
 
         line_message(f'Bot10Swing \n시작 : {tn}, \n표기 : {tn_df_idx} \n종료 : {_tn}, {sel_txt}')
 
-    
-    def get_min_df(self, code, to, min):
-
-        df = None
-        a_d = []
-        a_c = []
-
-        min_lst = self.fetch_today_1m_ohlcv(code, to)['output2']
-
-        for i, m in enumerate(min_lst):
-            a_d.append(str(m['stck_bsop_date'] + m['stck_cntg_hour']))
-            a_c.append((m['stck_prpr']))
-
-        df = pd.DataFrame({'date': a_d, code: a_c})
-        df = df.set_index('date')
-
-        n_s = 0
-        if min == 3:
-            n_s = 10
-        elif min == 5 or min == 10:
-            n_s = 11
-        elif min == 15:
-            n_s = 16
-            
-        if to == '153000':
-            df_h = df.head(1)
-            df_b = df.iloc[n_s::min, :]
-            df = pd.concat([df_h, df_b])[::-1]
-        else:
-            df = df.iloc[::min, :][::-1]
-
-        return df
-
 
     def market_to_excel(self, rebalance=False, filter=False):
 
