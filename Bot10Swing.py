@@ -528,7 +528,6 @@ class Bot10Swing():
 if __name__ == '__main__':
 
     B10 = Bot10Swing()
-    # 한달에 한번
     # B10.deadline_to_excel()
     # B10.market_to_excel()
 
