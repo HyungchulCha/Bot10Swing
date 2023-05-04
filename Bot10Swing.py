@@ -2,10 +2,9 @@ from BotConfig import *
 from BotUtil import *
 from BotKIKr import BotKIKr
 from dateutil.relativedelta import *
-from pykiwoom.kiwoom import *
-import time
+import yfinance as yf
+import FinanceDataReader as fdr
 import pandas as pd
-import numpy as np
 import datetime
 import threading
 import os
@@ -337,133 +336,161 @@ class Bot10Swing():
         line_message(f'Bot10Swing \n시작 : {tn}, \n표기 : {tn_df_idx} \n종료 : {_tn}, {sel_txt}')
 
 
-    def market_to_excel(self, rebalance=False, filter=False):
+    # def market_to_excel(self, rebalance=False, filter=False):
 
-        tn = datetime.datetime.now()
-        if rebalance:
-            tn = tn.replace(hour=15, minute=30, second=0)
-        tn_092000 = tn.replace(hour=9, minute=20, second=0)
+    #     tn = datetime.datetime.now()
+    #     if rebalance:
+    #         tn = tn.replace(hour=15, minute=30, second=0)
+    #     tn_092000 = tn.replace(hour=9, minute=20, second=0)
         
-        if tn > tn_092000:
+    #     if tn > tn_092000:
 
-            tn_div = tn.minute % 10
-            tn_del = None
+    #         tn_div = tn.minute % 10
+    #         tn_del = None
 
-            if tn_div == 0:
-                tn_del = 11
-            elif tn_div == 1:
-                tn_del = 12
-            elif tn_div == 2:
-                tn_del = 13
-            elif tn_div == 3:
-                tn_del = 14
-            elif tn_div == 4:
-                tn_del = 15
-            elif tn_div == 5:
-                tn_del = 16
-            elif tn_div == 6:
-                tn_del = 17
-            elif tn_div == 7:
-                tn_del = 18
-            elif tn_div == 8:
-                tn_del = 19
-            elif tn_div == 9:
-                tn_del = 10
+    #         if tn_div == 0:
+    #             tn_del = 11
+    #         elif tn_div == 1:
+    #             tn_del = 12
+    #         elif tn_div == 2:
+    #             tn_del = 13
+    #         elif tn_div == 3:
+    #             tn_del = 14
+    #         elif tn_div == 4:
+    #             tn_del = 15
+    #         elif tn_div == 5:
+    #             tn_del = 16
+    #         elif tn_div == 6:
+    #             tn_del = 17
+    #         elif tn_div == 7:
+    #             tn_del = 18
+    #         elif tn_div == 8:
+    #             tn_del = 19
+    #         elif tn_div == 9:
+    #             tn_del = 10
 
-            tn_req = ''
-            tn_int = int(tn.strftime('%H%M%S'))
-            tn_pos_a = 153000 <= tn_int
-            tn_pos_b = 152000 < tn_int and tn_int < 153000
-            tn_pos_c = tn_int <= 152000
+    #         tn_req = ''
+    #         tn_int = int(tn.strftime('%H%M%S'))
+    #         tn_pos_a = 153000 <= tn_int
+    #         tn_pos_b = 152000 < tn_int and tn_int < 153000
+    #         tn_pos_c = tn_int <= 152000
 
-            if tn_pos_a:
-                tn_req = '153000'
-            elif tn_pos_b:
-                tn_req = '151900'
-            elif tn_pos_c:
-                tn_req = (tn - datetime.timedelta(minutes=tn_del)).strftime('%H%M00')
+    #         if tn_pos_a:
+    #             tn_req = '153000'
+    #         elif tn_pos_b:
+    #             tn_req = '151900'
+    #         elif tn_pos_c:
+    #             tn_req = (tn - datetime.timedelta(minutes=tn_del)).strftime('%H%M00')
 
-            if filter:
-                fltr_list = self.bkk.filter_code_list()
-                if len(fltr_list) > 0:
-                    save_file(FILE_URL_SMBL_10M, fltr_list)
+    #         if filter:
+    #             fltr_list = self.bkk.filter_code_list()
+    #             if len(fltr_list) > 0:
+    #                 save_file(FILE_URL_SMBL_10M, fltr_list)
 
-            _code_list = list(set(self.get_guant_code_list() + self.get_balance_code_list()))
+    #         _code_list = list(set(self.get_guant_code_list() + self.get_balance_code_list()))
             
-            df_a = []
-            for c, code in enumerate(_code_list):
-                print(f"{c + 1}/{len(_code_list)} {code}")
-                df_a.append(self.bkk.df_today_1m_ohlcv(code, tn_req, 10))
-            df = pd.concat(df_a, axis=1)
-            df = df.loc[~df.index.duplicated(keep='last')]
+    #         df_a = []
+    #         for c, code in enumerate(_code_list):
+    #             print(f"{c + 1}/{len(_code_list)} {code}")
+    #             df_a.append(self.bkk.df_today_1m_ohlcv(code, tn_req, 10))
+    #         df = pd.concat(df_a, axis=1)
+    #         df = df.loc[~df.index.duplicated(keep='last')]
 
-            print('##################################################')
-            line_message(f'Bot10Swing Total Symbol Data: {len(_code_list)}개, \n{_code_list} \nFile Download Complete : {FILE_URL_DATA_10M}')
-            print(df)
-            df.to_excel(FILE_URL_DATA_10M)
+    #         print('##################################################')
+    #         line_message(f'Bot10Swing Total Symbol Data: {len(_code_list)}개, \n{_code_list} \nFile Download Complete : {FILE_URL_DATA_10M}')
+    #         print(df)
+    #         df.to_excel(FILE_URL_DATA_10M)
 
-            _tn = datetime.datetime.now()
-            _tn_div = _tn.minute % 10
+    #         _tn = datetime.datetime.now()
+    #         _tn_div = _tn.minute % 10
 
-            if tn_pos_c and _tn_div == 9:
-                self.bool_threshold = True
+    #         if tn_pos_c and _tn_div == 9:
+    #             self.bool_threshold = True
+
+
+    # def deadline_to_excel(self):
+    #     sym_lst = self.bkk.filter_code_list()
+    #     if len(sym_lst) > 0:
+    #         print('##################################################')
+    #         line_message(f'Bot10Swing Symbol List: {len(sym_lst)}개, \n{sym_lst} \nFile Download Complete : {FILE_URL_SMBL_10M}')
+    #         save_file(FILE_URL_SMBL_10M, sym_lst)
 
 
     def _market_to_excel(self):
 
-        fltr_list = self.bkk.filter_code_list()
-        if len(fltr_list) > 0:
-            save_file(FILE_URL_SMBL_10M, fltr_list)
-
-        code_list = list(set(self.get_guant_code_list() + self.get_balance_code_list()))
-
-        kiwoom = Kiwoom()
-        kiwoom.CommConnect()
-
-        delete_file(FILE_URL_10)
-
-        for i, code in enumerate(code_list):
-            print(f"{i + 1}/{len(code_list)} {code}")
-            df = kiwoom.block_request("opt10080", 종목코드=code, 틱범위=10, 수정주가구분=1, output="주식분봉차트조회", next=0)
-            df.drop(df[(df['체결시간'].str.contains('153300'))].index, inplace=True)
-            df.to_excel(FILE_URL_10 + '/' + code + '.xlsx')
-            time.sleep(0.25)
-
-        flist = os.listdir(FILE_URL_10)
-        xlsx_list = np.array([x for x in flist if x.endswith('.xlsx')])[:3]
+        symbols = fdr.StockListing('KRX')
         
-        empy_df = []
-        for x in np.nditer(xlsx_list):
-            code = str(x).split('.')[0]
-            code_df = pd.read_excel(FILE_URL_10 + '/' + str(x))
-            code_df = code_df[::-1]
-            code_df = code_df.tail(100)
+        kosp_list = self.bkk._filter_kospi_code_list()
+        kosd_list = self.bkk._filter_kosdaq_code_list()
+        remn_list = self.get_balance_code_list()
 
-            empt_ar = []
+        q_list = kosp_list + kosd_list
+        f_list = list(set(kosp_list + kosd_list + remn_list))
 
-            for i, row in code_df.iterrows():
-                str_o = str(abs(float(row['시가'])))
-                str_h = str(abs(float(row['고가'])))
-                str_l = str(abs(float(row['저가'])))
-                str_c = str(abs(float(row['현재가'])))
-                str_v = str(abs(float(row['거래량'])))
-                empt_ar.append(str_o + '|' + str_h + '|' + str_l + '|' + str_c + '|' + str_v)
+        f_list_a = []
+        i = 1
+        for fl in f_list:
 
-            empy_df.append(pd.DataFrame({code: empt_ar}))
-                
-        df = pd.concat(empy_df, axis=1)
+            print(f'market check : {i} / {len(f_list)}')
+
+            mk = symbols.loc[symbols['Code'] == fl]['Market'].iloc[-1]
+            if mk == 'KOSPI':
+                f_list_a.append(fl+'.KS')
+            elif mk == 'KOSDAQ':
+                f_list_a.append(fl+'.KQ')
+            
+            i += 1
+
+        # f_list_a = ['060540.KQ', '043150.KQ', '168360.KQ', '038870.KQ', '124500.KQ', '001060.KS', '005420.KS', '042700.KS', '033240.KS', '303030.KQ', '263020.KQ', '014580.KS', '307750.KQ', '002620.KS', '105840.KS', '047040.KS', '099430.KQ', '047400.KS', '003310.KQ', '002760.KS', '042110.KQ', '378850.KS', '085370.KQ', '027710.KQ', '207760.KQ', '032620.KQ', '173130.KQ', '014440.KS', '417500.KQ', '008700.KS', '018470.KS', '066130.KQ', '023160.KQ', '039420.KQ', '170030.KQ', '095500.KQ', '053050.KQ', '126600.KQ', '092220.KS', '164060.KQ', '085660.KQ', '077360.KQ', '066670.KQ', '396300.KQ', '220260.KQ', '105630.KS', '024840.KQ', '118990.KQ', '040610.KQ', '001250.KS', '012800.KS', '017900.KS', '017960.KS', '054090.KQ', '083420.KS', '138490.KS', '007660.KS', '009190.KS', '006880.KS', '067080.KQ', '023350.KS', '086980.KQ', '009160.KS', '092300.KQ', '081150.KQ', '244920.KS', '075970.KQ', '287410.KQ', '125210.KQ', '006340.KS', '042370.KQ', '310200.KQ', '015230.KS', '047560.KQ', '257720.KQ', '002720.KS', '008350.KS', '058820.KQ', '002700.KS', '005010.KS', '248070.KS', '033100.KQ', '035810.KQ', '119850.KQ', '000430.KS', '000910.KS', '005390.KS', '267260.KS', '103590.KS', '012510.KS', '136480.KQ', '004710.KS', '049720.KQ', '053700.KQ', '002140.KS', '078150.KQ', '019550.KQ', '352480.KQ', '010040.KS', '090350.KS', '382480.KQ', '001430.KS', '131030.KQ', '010100.KS', '001780.KS', '045390.KQ', '009450.KS', '053980.KQ', '037270.KS', '053270.KQ', '036890.KQ', '119500.KQ', '267270.KS', '006060.KS', '021050.KS', '001790.KS', '013310.KQ', '317400.KS', '005160.KQ', '025320.KQ', '050760.KQ', '001390.KS', '061250.KQ', '032850.KQ', '094820.KQ', '094840.KQ', '182360.KQ', '441270.KQ', '204610.KQ', '040160.KQ', '046390.KQ', '094480.KQ', '037950.KQ', '027970.KS', '353810.KQ', '126880.KQ', '293480.KS', '281740.KQ', '084650.KQ', '005680.KS', '008970.KS', '004310.KS', '011330.KS', '053690.KS', '032960.KQ', '065440.KQ', '120240.KQ', '285490.KQ', '241690.KQ', '017040.KS', '005690.KS', '353200.KS', '041190.KQ', '004560.KS', '027580.KQ', '036120.KQ', '102370.KQ', '137950.KQ', '335890.KQ', '071200.KQ', '003070.KS', '205470.KQ', '010470.KQ', '008040.KS', '011150.KS', '060560.KQ', '000480.KS', '064800.KQ']
+
+        tn_d = datetime.datetime.today()
+
+        df_10m_a = []
+        i = 1
+        for fsl in f_list_a:
+
+            print(f'yfinance download : {i} / {len(f_list_a)}')
+
+            df_10m_a_a = []
+
+            for x in range(8):
+                tn_b = tn_d - relativedelta(days=x)
+                tn_a = tn_d - relativedelta(days=x+1)
+                df_base_10m = yf.download(tickers=fsl, start=tn_a.strftime('%Y-%m-%d'), end=tn_b.strftime('%Y-%m-%d'), interval='5m', prepost=True)
+                if not (df_base_10m.empty):
+                    df_base_10m['Open_p'] = df_base_10m['Open'].shift(-1)
+                    df_base_10m['High_p'] = df_base_10m['High'].shift(-1)
+                    df_base_10m['Low_p'] = df_base_10m['Low'].shift(-1)
+                    df_base_10m['Adj Close_p'] = df_base_10m['Adj Close'].shift(-1)
+                    df_base_10m['Volume_p'] = df_base_10m['Volume'].shift(-1)
+
+                    df_10m_a_a_a = []
+                    j = 0
+                    for x, row in df_base_10m.iterrows():
+                        if j % 2 == 0:
+                            if not (math.isnan(row['Adj Close_p'])):
+                                str_o = row['Open']
+                                str_h = max(row['High'], row['High_p'])
+                                str_l = min(row['Low'], row['Low_p'])
+                                str_c = row['Adj Close_p']
+                                str_v = sum([row['Volume'], row['Volume_p']])
+                                df_10m_a_a_a.append(str(str_o) + '|' + str(str_h) + '|' + str(str_l) + '|' + str(str_c) + '|' + str(str_v))
+                            else:
+                                df_10m_a_a_a.append(str(row['Open']) + '|' + str(row['High']) + '|' + str(row['Low']) + '|' + str(row['Adj Close_p']) + '|' + str(row['Volume']))
+                        j += 1
+
+                    df_10m_a_a.append(pd.DataFrame({fsl.split('.')[0]: df_10m_a_a_a}))
+
+            df_10m_a.append(pd.concat(df_10m_a_a, axis=0).tail(80).reset_index(level=None, drop=True))
+
+            i += 1
+
+        fnal_df = pd.concat(df_10m_a, axis=1)
         print('##################################################')
-        line_message(f'Bot10Swing Total Symbol Data: {len(code_list)}개, \n{code_list} \nFile Download Complete : {FILE_URL_DATA_10M}')
-        print(df)
-        df.to_excel(FILE_URL_DATA_10M)
-
-    
-    def deadline_to_excel(self):
-        sym_lst = self.bkk.filter_code_list()
-        if len(sym_lst) > 0:
-            print('##################################################')
-            line_message(f'Bot10Swing Symbol List: {len(sym_lst)}개, \n{sym_lst} \nFile Download Complete : {FILE_URL_SMBL_10M}')
-            save_file(FILE_URL_SMBL_10M, sym_lst)
+        save_file(FILE_URL_SMBL_10M, q_list)
+        save_xlsx(FILE_URL_DATA_10M, fnal_df)
+        line_message(f'Bot10Swing Total Symbol Data: {len(f_list)}개, \n{f_list} \nFile Download Complete : {FILE_URL_DATA_10M}')
+        print(fnal_df)
         
     
     def get_balance_code_list(self, obj=False):
@@ -501,48 +528,50 @@ if __name__ == '__main__':
     B10 = Bot10Swing()
     B10._market_to_excel()
 
-    # while True:
+    while True:
 
-    #     try:
+        try:
 
-    #         t_n = datetime.datetime.now()
-    #         t_085000 = t_n.replace(hour=8, minute=50, second=0)
-    #         t_091000 = t_n.replace(hour=9, minute=10, second=0)
-    #         t_152500 = t_n.replace(hour=15, minute=25, second=0)
-    #         t_153000 = t_n.replace(hour=15, minute=30, second=0)
-    #         t_160000 = t_n.replace(hour=16, minute=0, second=0)
+            t_n = datetime.datetime.now()
+            t_085000 = t_n.replace(hour=8, minute=50, second=0)
+            t_091000 = t_n.replace(hour=9, minute=10, second=0)
+            t_152500 = t_n.replace(hour=15, minute=25, second=0)
+            t_153000 = t_n.replace(hour=15, minute=30, second=0)
+            t_160000 = t_n.replace(hour=16, minute=0, second=0)
 
-    #         if t_n >= t_085000 and t_n <= t_153000 and B10.bool_marketday == False:
-    #             if os.path.isfile(os.getcwd() + '/token.dat'):
-    #                 os.remove('token.dat')
-    #             B10.init_per_day()
-    #             B10.bool_marketday = True
-    #             B10.bool_marketday_end = False
+            if t_n >= t_085000 and t_n <= t_153000 and B10.bool_marketday == False:
+                if B10.bkk.fetch_marketday() == 'Y':
+                    B10._market_to_excel()
+                if os.path.isfile(os.getcwd() + '/token.dat'):
+                    os.remove('token.dat')
+                B10.init_per_day()
+                B10.bool_marketday = True
+                B10.bool_marketday_end = False
 
-    #             line_message(f'Bot10Swing Stock Start' if B10.init_marketday == 'Y' else 'Bot10Swing Holiday Start')
+                line_message(f'Bot10Swing Stock Start' if B10.init_marketday == 'Y' else 'Bot10Swing Holiday Start')
 
-    #         if B10.init_marketday == 'Y':
+            if B10.init_marketday == 'Y':
 
-    #             if t_n > t_152500 and t_n < t_153000 and B10.bool_stockorder_timer == False:
-    #                 B10.bool_stockorder_timer = True
+                if t_n > t_152500 and t_n < t_153000 and B10.bool_stockorder_timer == False:
+                    B10.bool_stockorder_timer = True
 
-    #             if t_n >= t_091000 and t_n <= t_153000 and B10.bool_stockorder == False:
-    #                 B10.stock_order()
-    #                 B10.bool_stockorder = True
+                if t_n >= t_091000 and t_n <= t_153000 and B10.bool_stockorder == False:
+                    B10.stock_order()
+                    B10.bool_stockorder = True
 
-    #         if t_n == t_160000 and B10.bool_marketday_end == False:
+            if t_n == t_160000 and B10.bool_marketday_end == False:
 
-    #             if B10.init_marketday == 'Y':
-    #                 B10._market_to_excel()
-    #                 B10.bool_stockorder_timer = False
-    #                 B10.bool_stockorder = False
+                if B10.init_marketday == 'Y':
+                    # B10._market_to_excel(True, True)
+                    B10.bool_stockorder_timer = False
+                    B10.bool_stockorder = False
 
-    #             B10.bool_marketday = False
-    #             B10.bool_marketday_end = True
+                B10.bool_marketday = False
+                B10.bool_marketday_end = True
 
-    #             line_message(f'Bot10Swing Stock End' if B10.init_marketday == 'Y' else 'Bot10Swing Holiday End')
+                line_message(f'Bot10Swing Stock End' if B10.init_marketday == 'Y' else 'Bot10Swing Holiday End')
 
-    #     except Exception as e:
+        except Exception as e:
 
-    #         line_message(f"Bot10Swing Error : {e}")
-    #         break
+            line_message(f"Bot10Swing Error : {e}")
+            break
