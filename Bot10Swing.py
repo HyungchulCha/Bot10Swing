@@ -423,10 +423,10 @@ class Bot10Swing():
         
         kosp_list = self.bkk._filter_kospi_code_list()
         kosd_list = self.bkk._filter_kosdaq_code_list()
-        remn_list = self.get_balance_code_list()
+        blnc_list = self.get_balance_code_list()
 
         q_list = kosp_list + kosd_list
-        f_list = list(set(kosp_list + kosd_list + remn_list))
+        f_list = list(set(kosp_list + kosd_list + blnc_list))
 
         f_list_a = []
         i = 1
@@ -492,7 +492,7 @@ class Bot10Swing():
         print('##################################################')
         save_file(FILE_URL_SMBL_10M, q_list)
         save_xlsx(FILE_URL_DATA_10M, fnal_df)
-        line_message(f'Bot10Swing Total Symbol Data: {len(f_list)}개, \n{f_list} \nFile Download Complete : {FILE_URL_DATA_10M}')
+        line_message(f'Bot10Swing \nQuant List: {len(q_list)}종목 \nBalance List: {len(blnc_list)}종목 \nTotal List: {len(f_list)}개, \n{f_list} \nFile Download Complete : {FILE_URL_DATA_10M}')
         print(fnal_df)
         
     
