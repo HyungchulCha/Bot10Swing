@@ -399,12 +399,10 @@ class BotKIKr:
             d = self.fetch_ohlcv_domestic(cl, 'D', tn_1.strftime('%Y%m%d'), tn.strftime('%Y%m%d'))
             cur_p = int(d['output1']['stck_prpr'])
             cur_v = int(d['output1']['acml_vol'])
-            prv_q = int(d['output1']['prdy_vrss_vol'])
 
             if \
             cur_p > 1000 and \
-            cur_v > 300000 and \
-            prv_q > 0 \
+            cur_v > 750000 \
             :
                 sym_lst.append(cl)
 
@@ -463,7 +461,7 @@ class BotKIKr:
 
             if \
             cur_p > 1000 and \
-            cur_v > 300000 \
+            cur_v > 750000 \
             :
                 kp_sym_lst.append(kpcl)
 
@@ -522,7 +520,7 @@ class BotKIKr:
 
             if \
             cur_p > 1000 and \
-            cur_v > 300000 \
+            cur_v > 750000 \
             :
                 kd_sym_lst.append(kdcl)
 

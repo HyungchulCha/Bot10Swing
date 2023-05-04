@@ -16,7 +16,7 @@ class Bot10Swing():
     
     def __init__(self):
 
-        self.mock = True
+        self.mock = False
         self.key = KI_APPKEY_IMITATION if self.mock else KI_APPKEY_PRACTICE
         self.secret = KI_APPSECRET_IMITATION if self.mock else KI_APPSECRET_PRACTICE
         self.account = KI_ACCOUNT_IMITATION if self.mock else KI_ACCOUNT_PRACTICE
@@ -428,6 +428,8 @@ class Bot10Swing():
         q_list = kosp_list + kosd_list
         f_list = list(set(kosp_list + kosd_list + blnc_list))
 
+        print(len(q_list))
+
         f_list_a = []
         i = 1
         for fl in f_list:
@@ -460,7 +462,6 @@ class Bot10Swing():
 
                 df_base_10m = yf.download(tickers=fsl, start=tn_a.strftime('%Y-%m-%d'), end=tn_b.strftime('%Y-%m-%d'), interval='5m', prepost=True)
                 if not (df_base_10m.empty):
-                    pprint(df_base_10m.index.to_list())
                     df_base_10m['Open_p'] = df_base_10m['Open'].shift(-1)
                     df_base_10m['High_p'] = df_base_10m['High'].shift(-1)
                     df_base_10m['Low_p'] = df_base_10m['Low'].shift(-1)
