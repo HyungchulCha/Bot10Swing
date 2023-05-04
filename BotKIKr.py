@@ -386,6 +386,7 @@ class BotKIKr:
                 # & (kp['기준가'] > 1000) 
                 # & (kp['전일거래량'] > 500000) 
                 ]
+        print(1)
         _code_list = kp['단축코드'].to_list() + kd['단축코드'].to_list()
         code_list = self.get_caution_code_list(_code_list, True)
 
