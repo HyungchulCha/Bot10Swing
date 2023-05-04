@@ -403,7 +403,7 @@ class BotKIKr:
 
             if \
             cur_p > 1000 and \
-            cur_v > 500000 and \
+            cur_v > 300000 and \
             prv_q > 0 \
             :
                 sym_lst.append(cl)
