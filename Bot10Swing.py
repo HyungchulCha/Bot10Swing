@@ -9,6 +9,7 @@ import datetime
 import threading
 import os
 import copy
+from pprint import pprint
 
 class Bot10Swing():
 
@@ -453,11 +454,13 @@ class Bot10Swing():
 
             df_10m_a_a = []
 
-            for x in range(8):
+            for x in reversed(range(8)):
                 tn_b = tn_d - relativedelta(days=x)
                 tn_a = tn_d - relativedelta(days=x+1)
+
                 df_base_10m = yf.download(tickers=fsl, start=tn_a.strftime('%Y-%m-%d'), end=tn_b.strftime('%Y-%m-%d'), interval='5m', prepost=True)
                 if not (df_base_10m.empty):
+                    pprint(df_base_10m.index.to_list())
                     df_base_10m['Open_p'] = df_base_10m['Open'].shift(-1)
                     df_base_10m['High_p'] = df_base_10m['High'].shift(-1)
                     df_base_10m['Low_p'] = df_base_10m['Low'].shift(-1)
@@ -533,13 +536,13 @@ if __name__ == '__main__':
         try:
 
             t_n = datetime.datetime.now()
-            t_085000 = t_n.replace(hour=8, minute=50, second=0)
+            t_083000 = t_n.replace(hour=8, minute=30, second=0)
             t_091000 = t_n.replace(hour=9, minute=10, second=0)
             t_152500 = t_n.replace(hour=15, minute=25, second=0)
             t_153000 = t_n.replace(hour=15, minute=30, second=0)
             t_160000 = t_n.replace(hour=16, minute=0, second=0)
 
-            if t_n >= t_085000 and t_n <= t_153000 and B10.bool_marketday == False:
+            if t_n >= t_083000 and t_n <= t_153000 and B10.bool_marketday == False:
                 if B10.bkk.fetch_marketday() == 'Y':
                     B10._market_to_excel()
                 if os.path.isfile(os.getcwd() + '/token.dat'):
