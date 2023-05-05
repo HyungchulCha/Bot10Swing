@@ -2,14 +2,11 @@ from BotConfig import *
 from BotUtil import *
 from BotKIKr import BotKIKr
 from dateutil.relativedelta import *
-import yfinance as yf
-import FinanceDataReader as fdr
 import pandas as pd
 import datetime
 import threading
 import os
 import copy
-from pprint import pprint
 
 class Bot10Swing():
 
@@ -338,84 +335,16 @@ class Bot10Swing():
 
 
     def market_to_excel(self):
-
-        symbols = fdr.StockListing('KRX')
         
-        kosp_list = self.bkk._filter_kospi_code_list()
-        kosd_list = self.bkk._filter_kosdaq_code_list()
-        blnc_list = self.get_balance_code_list()
-
-        q_list = kosp_list + kosd_list
-        f_list = list(set(kosp_list + kosd_list + blnc_list))
-
-        print(len(q_list))
-
-        f_list_a = []
-        i = 1
-        for fl in f_list:
-
-            print(f'market check : {i} / {len(f_list)}')
-
-            mk = symbols.loc[symbols['Code'] == fl]['Market'].iloc[-1]
-            if mk == 'KOSPI':
-                f_list_a.append(fl+'.KS')
-            elif mk == 'KOSDAQ':
-                f_list_a.append(fl+'.KQ')
-            
-            i += 1
-
-        # f_list_a = ['060540.KQ', '043150.KQ', '168360.KQ', '038870.KQ', '124500.KQ', '001060.KS', '005420.KS', '042700.KS', '033240.KS', '303030.KQ', '263020.KQ', '014580.KS', '307750.KQ', '002620.KS', '105840.KS', '047040.KS', '099430.KQ', '047400.KS', '003310.KQ', '002760.KS', '042110.KQ', '378850.KS', '085370.KQ', '027710.KQ', '207760.KQ', '032620.KQ', '173130.KQ', '014440.KS', '417500.KQ', '008700.KS', '018470.KS', '066130.KQ', '023160.KQ', '039420.KQ', '170030.KQ', '095500.KQ', '053050.KQ', '126600.KQ', '092220.KS', '164060.KQ', '085660.KQ', '077360.KQ', '066670.KQ', '396300.KQ', '220260.KQ', '105630.KS', '024840.KQ', '118990.KQ', '040610.KQ', '001250.KS', '012800.KS', '017900.KS', '017960.KS', '054090.KQ', '083420.KS', '138490.KS', '007660.KS', '009190.KS', '006880.KS', '067080.KQ', '023350.KS', '086980.KQ', '009160.KS', '092300.KQ', '081150.KQ', '244920.KS', '075970.KQ', '287410.KQ', '125210.KQ', '006340.KS', '042370.KQ', '310200.KQ', '015230.KS', '047560.KQ', '257720.KQ', '002720.KS', '008350.KS', '058820.KQ', '002700.KS', '005010.KS', '248070.KS', '033100.KQ', '035810.KQ', '119850.KQ', '000430.KS', '000910.KS', '005390.KS', '267260.KS', '103590.KS', '012510.KS', '136480.KQ', '004710.KS', '049720.KQ', '053700.KQ', '002140.KS', '078150.KQ', '019550.KQ', '352480.KQ', '010040.KS', '090350.KS', '382480.KQ', '001430.KS', '131030.KQ', '010100.KS', '001780.KS', '045390.KQ', '009450.KS', '053980.KQ', '037270.KS', '053270.KQ', '036890.KQ', '119500.KQ', '267270.KS', '006060.KS', '021050.KS', '001790.KS', '013310.KQ', '317400.KS', '005160.KQ', '025320.KQ', '050760.KQ', '001390.KS', '061250.KQ', '032850.KQ', '094820.KQ', '094840.KQ', '182360.KQ', '441270.KQ', '204610.KQ', '040160.KQ', '046390.KQ', '094480.KQ', '037950.KQ', '027970.KS', '353810.KQ', '126880.KQ', '293480.KS', '281740.KQ', '084650.KQ', '005680.KS', '008970.KS', '004310.KS', '011330.KS', '053690.KS', '032960.KQ', '065440.KQ', '120240.KQ', '285490.KQ', '241690.KQ', '017040.KS', '005690.KS', '353200.KS', '041190.KQ', '004560.KS', '027580.KQ', '036120.KQ', '102370.KQ', '137950.KQ', '335890.KQ', '071200.KQ', '003070.KS', '205470.KQ', '010470.KQ', '008040.KS', '011150.KS', '060560.KQ', '000480.KS', '064800.KQ']
-
-        tn_d = datetime.datetime.today()
-
-        df_10m_a = []
-        i = 1
-        for fsl in f_list_a:
-
-            print(f'yfinance download : {i} / {len(f_list_a)}')
-
-            df_10m_a_a = []
-
-            for x in reversed(range(8)):
-                tn_b = tn_d - relativedelta(days=x)
-                tn_a = tn_d - relativedelta(days=x+1)
-
-                df_base_10m = yf.download(tickers=fsl, start=tn_a.strftime('%Y-%m-%d'), end=tn_b.strftime('%Y-%m-%d'), interval='5m', prepost=True)
-                if not (df_base_10m.empty):
-                    df_base_10m['Open_p'] = df_base_10m['Open'].shift(-1)
-                    df_base_10m['High_p'] = df_base_10m['High'].shift(-1)
-                    df_base_10m['Low_p'] = df_base_10m['Low'].shift(-1)
-                    df_base_10m['Adj Close_p'] = df_base_10m['Adj Close'].shift(-1)
-                    df_base_10m['Volume_p'] = df_base_10m['Volume'].shift(-1)
-
-                    df_10m_a_a_a = []
-                    j = 0
-                    for x, row in df_base_10m.iterrows():
-                        if j % 2 == 0:
-                            if not (math.isnan(row['Adj Close_p'])):
-                                str_o = row['Open']
-                                str_h = max(row['High'], row['High_p'])
-                                str_l = min(row['Low'], row['Low_p'])
-                                str_c = row['Adj Close_p']
-                                str_v = sum([row['Volume'], row['Volume_p']])
-                                df_10m_a_a_a.append(str(str_o) + '|' + str(str_h) + '|' + str(str_l) + '|' + str(str_c) + '|' + str(str_v))
-                            else:
-                                df_10m_a_a_a.append(str(row['Open']) + '|' + str(row['High']) + '|' + str(row['Low']) + '|' + str(row['Adj Close_p']) + '|' + str(row['Volume']))
-                        j += 1
-
-                    df_10m_a_a.append(pd.DataFrame({fsl.split('.')[0]: df_10m_a_a_a}))
-
-            df_10m_a.append(pd.concat(df_10m_a_a, axis=0).tail(80).reset_index(level=None, drop=True))
-
-            i += 1
-
-        fnal_df = pd.concat(df_10m_a, axis=1)
-        fnal_df.index.name = 'date'
+        b_list = self.get_balance_code_list()
+        q_list = self.bkk.get_condition_code_list()
+        f_list = list(set(q_list + b_list))
+        f_df = get_yfinance_df(f_list, 10)
         print('##################################################')
         save_file(FILE_URL_SMBL_10M, q_list)
-        save_xlsx(FILE_URL_DATA_10M, fnal_df)
-        line_message(f'Bot10Swing \nQuant List: {len(q_list)}종목 \nBalance List: {len(blnc_list)}종목 \nTotal List: {len(f_list)}개, \n{f_list} \nFile Download Complete : {FILE_URL_DATA_10M}')
-        print(fnal_df)
+        save_xlsx(FILE_URL_DATA_10M, f_df)
+        line_message(f'Bot10Swing \nQuant List: {len(q_list)}종목 \nBalance List: {len(b_list)}종목 \nTotal List: {len(f_list)}개, \n{f_list} \nFile Download Complete : {FILE_URL_DATA_10M}')
+        print(f_df)
         
     
     def get_balance_code_list(self, obj=False):
