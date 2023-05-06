@@ -341,6 +341,8 @@ class Bot10Swing():
         
         b_list = self.get_balance_code_list()
         q_list = self.bkk.get_condition_code_list()
+        if len(q_list) == 0:
+            q_list = self.get_guant_code_list()
         f_list = list(set(q_list + b_list))
         f_df = get_yfinance_df(f_list, 10)
         print('##################################################')
