@@ -34,7 +34,7 @@ class Bot10Swing():
         self.bool_threshold = False
         self.bool_market = False
 
-        self.init_marketday = None
+        self.init_marketday = self.bkk.fetch_marketday()
         self.init_stockorder_timer = None
 
 
@@ -43,7 +43,7 @@ class Bot10Swing():
         self.bkk = BotKIKr(self.key, self.secret, self.account, self.mock)
         self.init_marketday = self.bkk.fetch_marketday()
 
-        if self.bool_market == False:
+        if self.bool_market == False and self.init_marketday == 'Y':
 
             self.init_to_excel()
 
@@ -59,7 +59,7 @@ class Bot10Swing():
             self.tot_evl_price = _ttl_prc if _ttl_prc < 60000000 else 60000000
             self.buy_max_price = self.tot_evl_price / _buy_cnt
 
-        line_message(f'Bot10Swing \n평가금액 : {self.tot_evl_price}원, 다른종목: {len(self.r_l)}개')
+            line_message(f'Bot10Swing \n평가금액 : {self.tot_evl_price}원, 다른종목: {len(self.r_l)}개')
     
 
     def stock_order(self):
@@ -540,10 +540,10 @@ if __name__ == '__main__':
             if t_n == t_180000 and B10.bool_marketday_end == False:
 
                 if B10.init_marketday == 'Y':
+                    B10.deadline_symbol_list()
                     B10.bool_stockorder_timer = False
                     B10.bool_stockorder = False
-
-                B10.deadline_symbol_list()
+                    
                 B10.bool_marketday = False
                 B10.bool_marketday_end = True
 
