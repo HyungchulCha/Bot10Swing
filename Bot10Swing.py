@@ -32,6 +32,7 @@ class Bot10Swing():
         self.bool_stockorder_timer = False
         self.bool_marketday_end = False
         self.bool_threshold = False
+        self.bool_market = False
 
         self.init_marketday = None
         self.init_stockorder_timer = None
@@ -40,18 +41,23 @@ class Bot10Swing():
     def init_per_day(self):
 
         self.bkk = BotKIKr(self.key, self.secret, self.account, self.mock)
-        self.bdf = load_xlsx(FILE_URL_DATA_10M).set_index('date')
-        self.b_l = self.bdf.columns.to_list()
-        self.q_l = self.get_guant_code_list()
-        self.r_l = list(set(self.get_balance_code_list()).difference(self.q_l))
-
-        _ttl_prc = int(self.bkk.fetch_balance()['output2'][0]['tot_evlu_amt'])
-        _buy_cnt = len(self.q_l) if len(self.q_l) > 45 else 45
-        _buy_cnt = 60
-        
-        self.tot_evl_price = _ttl_prc if _ttl_prc < 45000000 else 45000000
-        self.buy_max_price = self.tot_evl_price / _buy_cnt
         self.init_marketday = self.bkk.fetch_marketday()
+
+        if self.init_marketday == 'Y' and self.bool_market == False:
+
+            self.init_to_excel()
+
+            self.bdf = load_xlsx(FILE_URL_DATA_10M).set_index('date')
+            self.b_l = self.bdf.columns.to_list()
+            self.q_l = self.get_guant_code_list()
+            self.r_l = list(set(self.get_balance_code_list()).difference(self.q_l))
+
+            _ttl_prc = int(self.bkk.fetch_balance()['output2'][0]['tot_evlu_amt'])
+            # _buy_cnt = len(self.q_l) if len(self.q_l) > 45 else 45
+            _buy_cnt = 100
+            
+            self.tot_evl_price = _ttl_prc if _ttl_prc < 60000000 else 60000000
+            self.buy_max_price = self.tot_evl_price / _buy_cnt
 
         line_message(f'Bot10Swing \n평가금액 : {self.tot_evl_price}원, 다른종목: {len(self.r_l)}개')
     
@@ -343,19 +349,129 @@ class Bot10Swing():
         line_message(f'Bot10Swing \n시작 : {tn}, \n표기 : {tn_df_idx} \n종료 : {_tn}, {sel_txt}')
 
 
-    def market_to_excel(self):
+    def market_to_excel(self, rebalance=False, filter=False):
+
+        tn = datetime.datetime.now()
+        if rebalance:
+            tn = tn.replace(hour=15, minute=30, second=0)
+        tn_092000 = tn.replace(hour=9, minute=20, second=0)
+        
+        if tn > tn_092000:
+
+            tn_div = tn.minute % 10
+            tn_del = None
+
+            if tn_div == 0:
+                tn_del = 11
+            elif tn_div == 1:
+                tn_del = 12
+            elif tn_div == 2:
+                tn_del = 13
+            elif tn_div == 3:
+                tn_del = 14
+            elif tn_div == 4:
+                tn_del = 15
+            elif tn_div == 5:
+                tn_del = 16
+            elif tn_div == 6:
+                tn_del = 17
+            elif tn_div == 7:
+                tn_del = 18
+            elif tn_div == 8:
+                tn_del = 19
+            elif tn_div == 9:
+                tn_del = 10
+
+            tn_req = ''
+            tn_int = int(tn.strftime('%H%M%S'))
+            tn_pos_a = 153000 <= tn_int
+            tn_pos_b = 152000 < tn_int and tn_int < 153000
+            tn_pos_c = tn_int <= 152000
+
+            if tn_pos_a:
+                tn_req = '153000'
+            elif tn_pos_b:
+                tn_req = '151900'
+            elif tn_pos_c:
+                tn_req = (tn - datetime.timedelta(minutes=tn_del)).strftime('%H%M00')
+
+            # if filter:
+            #     fltr_list = self.bkk.filter_code_list()
+            #     if len(fltr_list) > 0:
+            #         save_file(FILE_URL_SMBL_10M, fltr_list)
+
+            # _code_list = list(set(self.get_guant_code_list() + self.get_balance_code_list()))
+            
+            # df_a = []
+            # for c, code in enumerate(_code_list):
+            #     print(f"{c + 1}/{len(_code_list)} {code}")
+            #     df_a.append(self.bkk.df_today_1m_ohlcv(code, tn_req, 10))
+            # df = pd.concat(df_a, axis=1)
+            # df = df.loc[~df.index.duplicated(keep='last')]
+
+            # print('##################################################')
+            # line_message(f'Bot10Swing Total Symbol Data: {len(_code_list)}개, \n{_code_list} \nFile Download Complete : {FILE_URL_DATA_10M}')
+            # print(df)
+            # df.to_excel(FILE_URL_DATA_10M)
+
+
+            df_befor = load_xlsx(FILE_URL_DATA_10M).sort_index(axis=1)
+            _code_list = df_befor.columns.to_list()[:-1]
+            
+            df_a = []
+            for c, code in enumerate(_code_list):
+                print(f"{c + 1}/{len(_code_list)} {code}")
+                df_a.append(self.bkk.df_today_1m_ohlcv(code, tn_req, 10))
+            df = pd.concat(df_a, axis=1)
+            df = df.loc[~df.index.duplicated(keep='last')]
+            
+            df_after = df.sort_index(axis=1)
+            df_final = pd.concat([df_befor, df_after], axis=0)
+            df_final = df_final.tail(80).reset_index(level=None, drop=True)
+            df_final.drop(['date'], axis=1, inplace=True)
+            df_final.index.name = 'date'
+
+            self.bdf = df_final
+            self.b_l = self.bdf.columns.to_list()
+            self.q_l = self.get_guant_code_list()
+            self.r_l = list(set(self.get_balance_code_list()).difference(self.q_l))
+
+            _ttl_prc = int(self.bkk.fetch_balance()['output2'][0]['tot_evlu_amt'])
+            _buy_cnt = len(self.q_l) if len(self.q_l) > 45 else 45
+            _buy_cnt = 100
+            
+            self.tot_evl_price = _ttl_prc if _ttl_prc < 45000000 else 45000000
+            self.buy_max_price = self.tot_evl_price / _buy_cnt
+
+            self.bool_market = True
+
+
+            _tn = datetime.datetime.now()
+            _tn_div = _tn.minute % 10
+
+            if tn_pos_c and _tn_div == 9:
+                self.bool_threshold = True
+
+
+    def init_to_excel(self):
         
         b_list = self.get_balance_code_list()
-        q_list = self.bkk.get_condition_code_list()
-        if len(q_list) == 0:
-            q_list = self.get_guant_code_list()
+        q_list = self.get_guant_code_list()
         f_list = list(set(q_list + b_list))
-        f_df = get_yfinance_df(f_list, 10)
-        print('##################################################')
-        save_file(FILE_URL_SMBL_10M, q_list)
+        f_df = gen_yf_df(f_list, 10)
         save_xlsx(FILE_URL_DATA_10M, f_df)
-        line_message(f'Bot10Swing \nQuant List: {len(q_list)}종목 \nBalance List: {len(b_list)}종목 \nTotal List: {len(f_list)}개, \n{f_list} \nFile Download Complete : {FILE_URL_DATA_10M}')
+        print('##################################################')
+        line_message(f'Bot10Swing \nSymbol List: {len(q_list)}종목 \nBalance List: {len(b_list)}종목 \nTotal List: {len(f_list)}개, \n{f_list} \nFile Download Complete : {FILE_URL_DATA_10M}')
         print(f_df)
+
+
+    def deadline_symbol_list(self):
+
+        q_list = self.bkk.get_condition_code_list()
+        if len(q_list) != 0:
+            save_file(FILE_URL_SMBL_10M, q_list)
+            print('##################################################')
+            line_message(f'Bot10Swing \nSymbol List: {len(q_list)}종목 \n{q_list}')
         
     
     def get_balance_code_list(self, obj=False):
@@ -427,6 +543,7 @@ if __name__ == '__main__':
             if t_n == t_160000 and B10.bool_marketday_end == False:
 
                 if B10.init_marketday == 'Y':
+                    B10.deadline_symbol_list()
                     B10.bool_stockorder_timer = False
                     B10.bool_stockorder = False
 
