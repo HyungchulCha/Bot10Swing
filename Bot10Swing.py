@@ -43,7 +43,7 @@ class Bot10Swing():
         self.bkk = BotKIKr(self.key, self.secret, self.account, self.mock)
         self.init_marketday = self.bkk.fetch_marketday()
 
-        if self.init_marketday == 'Y' and self.bool_market == False:
+        if self.bool_market == False:
 
             self.init_to_excel()
 
@@ -437,10 +437,9 @@ class Bot10Swing():
             self.r_l = list(set(self.get_balance_code_list()).difference(self.q_l))
 
             _ttl_prc = int(self.bkk.fetch_balance()['output2'][0]['tot_evlu_amt'])
-            _buy_cnt = len(self.q_l) if len(self.q_l) > 45 else 45
             _buy_cnt = 100
             
-            self.tot_evl_price = _ttl_prc if _ttl_prc < 45000000 else 45000000
+            self.tot_evl_price = _ttl_prc if _ttl_prc < 60000000 else 60000000
             self.buy_max_price = self.tot_evl_price / _buy_cnt
 
             self.bool_market = True
@@ -543,10 +542,10 @@ if __name__ == '__main__':
             if t_n == t_180000 and B10.bool_marketday_end == False:
 
                 if B10.init_marketday == 'Y':
-                    B10.deadline_symbol_list()
                     B10.bool_stockorder_timer = False
                     B10.bool_stockorder = False
 
+                B10.deadline_symbol_list()
                 B10.bool_marketday = False
                 B10.bool_marketday_end = True
 
