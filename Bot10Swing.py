@@ -54,9 +54,9 @@ class Bot10Swing():
 
             _ttl_prc = int(self.bkk.fetch_balance()['output2'][0]['tot_evlu_amt'])
             # _buy_cnt = len(self.q_l) if len(self.q_l) > 45 else 45
-            _buy_cnt = 100
+            _buy_cnt = 80
             
-            self.tot_evl_price = _ttl_prc if _ttl_prc < 60000000 else 60000000
+            self.tot_evl_price = _ttl_prc if _ttl_prc < 40000000 else 40000000
             self.buy_max_price = self.tot_evl_price / _buy_cnt
 
             line_message(f'Bot10Swing \n평가금액 : {self.tot_evl_price}원, 다른종목: {len(self.r_l)}개')
@@ -174,7 +174,7 @@ class Bot10Swing():
                     now_d = datetime.datetime.now().strftime('%Y%m%d')
                     dif_d = datetime.datetime(int(now_d[:4]), int(now_d[4:6]), int(now_d[6:])) - datetime.datetime(int(obj_d[:4]), int(obj_d[4:6]), int(obj_d[6:]))
 
-                    if (dif_d.days) >= 14 and obj_s == 1:
+                    if (dif_d.days) >= 21 and obj_s == 1:
 
                         bal_fst = bal_lst[code]['a']
                         bal_qty = bal_lst[code]['q']
@@ -203,7 +203,6 @@ class Bot10Swing():
 
                         if obj_lst[code]['x'] > chk_cls:
 
-                            bal_pft = copy.deepcopy(bal_lst[code]['pft'])
                             bal_fst = copy.deepcopy(bal_lst[code]['a'])
                             bal_qty = copy.deepcopy(bal_lst[code]['q'])
                             obj_max = copy.deepcopy(obj_lst[code]['x'])
@@ -215,6 +214,7 @@ class Bot10Swing():
                             is_qty_01 = bal_qty == ord_qty_01
                             is_qty_02 = bal_qty == ord_qty_02
                             obj_pft = obj_max / bal_fst
+                            bal_pft = chk_cls / bal_fst
                             los_dif = obj_pft - bal_pft
 
                             if 1 < bal_pft < hp:
@@ -437,9 +437,9 @@ class Bot10Swing():
             self.r_l = list(set(self.get_balance_code_list()).difference(self.q_l))
 
             _ttl_prc = int(self.bkk.fetch_balance()['output2'][0]['tot_evlu_amt'])
-            _buy_cnt = 100
+            _buy_cnt = 80
             
-            self.tot_evl_price = _ttl_prc if _ttl_prc < 60000000 else 60000000
+            self.tot_evl_price = _ttl_prc if _ttl_prc < 40000000 else 40000000
             self.buy_max_price = self.tot_evl_price / _buy_cnt
 
             self.bool_market = True
